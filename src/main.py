@@ -1,30 +1,142 @@
 import pyxel
+import math
 
-W, H = 160, 120
-x, y = 10, 10
-dx, dy = 1, 1
-
-
-def update():
-    global x, y, dx, dy
-    # Quit with Q
-    if pyxel.btnp(pyxel.KEY_Q):
-        pyxel.quit()
-
-    # Simple movement demo
-    x += dx
-    y += dy
-    if x <= 0 or x >= W - 10:
-        dx = -dx
-    if y <= 0 or y >= H - 10:
-        dy = -dy
- 
-
-def draw():
-    pyxel.cls(0)              # clear screen to color 0 (black)
-    pyxel.text(4, 4, "Hello Pyxel Web!", 7)
-    pyxel.rect(x, y, 10, 10, 11)  # small bouncing square
+WIDTH = 300
+HEIGHT = 200
+PLAYER_RADIUS = 4
+SPEED = 1.2
 
 
-pyxel.init(W, H, title="Pyxel Web (Codespaces)")
-pyxel.run(update, draw)
+
+def draw_arrow(x1, y1, x2, y2, color):
+    pyxel.line(x1, y1, x2, y2, color)
+
+    angle = math.atan2(y2 - y1, x2 - x1)
+    size = 5
+
+    left = (
+        x2 - size * math.cos(angle - 0.5),
+        y2 - size * math.sin(angle - 0.5),
+    )
+    right = (
+        x2 - size * math.cos(angle + 0.5),
+        y2 - size * math.sin(angle + 0.5),
+    )
+
+    pyxel.line(x2, y2, int(left[0]), int(left[1]), color)
+    pyxel.line(x2, y2, int(right[0]), int(right[1]), color)
+
+
+
+class Player:
+    def __init__(self, x, y, route):
+        self.start_x = x
+        self.start_y = y
+        self.x = x
+        self.y = y
+        self.route = route
+        self.target_index = 0
+
+    def reset(self):
+        self.x = self.start_x
+        self.y = self.start_y
+        self.target_index = 0
+
+    def update(self):
+        if self.target_index >= len(self.route):
+            return
+
+        tx, ty = self.route[self.target_index]
+        dx = tx - self.x
+        dy = ty - self.y
+        dist = math.sqrt(dx * dx + dy * dy)
+
+        if dist < SPEED:
+            self.x, self.y = tx, ty
+            self.target_index += 1
+        else:
+            self.x += SPEED * dx / dist
+            self.y += SPEED * dy / dist
+
+    def draw(self):
+        pyxel.circ(self.x, self.y, PLAYER_RADIUS, 7)
+
+    def draw_route(self):
+        px, py = self.start_x, self.start_y
+        for point in self.route:
+            draw_arrow(px, py, point[0], point[1], 8)
+            px, py = point
+
+
+
+class App:
+    def __init__(self):
+        pyxel.init(WIDTH, HEIGHT, title="Football Play Animator")
+        self.create_play()
+        pyxel.run(self.update, self.draw)
+
+    def create_play(self):
+        self.players = []
+
+        y_los = 140  # line of scrimmage
+
+        # Quarterback
+        self.players.append(
+            Player(150, y_los, [(150, 170)])
+        )
+
+        # Running Back
+        self.players.append(
+            Player(150, y_los + 15, [(120, 120), (150, 110)])
+        )
+
+        # Wide Receivers
+        self.players.append(
+            Player(90, y_los, [(90, 80)])   # Left go
+        )
+        self.players.append(
+            Player(210, y_los, [(210, 110), (240, 110)])  # Right out
+        )
+
+        self.players.append(Player(220, y_los + 5, [(220, 100), (200, 80)])) #Post
+
+        #Tight End
+        self.players.append(Player(190, y_los + 5, [(180, y_los - 5), (100, y_los - 5)])) #Drag
+        
+        # Offensive Line
+        self.players.append(Player(120, y_los, [(120, y_los + 10)]))  # LT
+        self.players.append(Player(135, y_los, [(135, y_los + 5)]))  # LG
+        self.players.append(Player(150, y_los, [(150, y_los)]))  # C
+        self.players.append(Player(165, y_los, [(165, y_los + 5)]))  # RG
+        self.players.append(Player(180, y_los, [(180, y_los + 10)]))  # RT
+
+    def update(self):
+        if pyxel.btnp(pyxel.KEY_R):
+            for p in self.players:
+                p.reset()
+
+        for p in self.players:
+            p.update()
+
+    def draw_field(self):
+        pyxel.cls(11)
+
+        for y in range(20, HEIGHT, 20):
+            pyxel.line(0, y, WIDTH, y, 3)
+
+        pyxel.line(0, 140, WIDTH, 140, 0)
+
+    def draw(self):
+        self.draw_field()
+
+        for p in self.players:
+            p.draw_route()
+
+    
+        for p in self.players:
+            p.draw()
+
+        pyxel.text(5, 5, "R = Reset Play", 0)
+
+
+App()
