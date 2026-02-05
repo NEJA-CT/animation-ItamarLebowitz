@@ -3,8 +3,8 @@ import math
 
 WIDTH = 300
 HEIGHT = 200
-PLAYER_RADIUS = 4
-SPEED = 1.2
+PLAYER_RADIUS = 3.5
+TURN = 0.1
 
 
 
@@ -29,12 +29,13 @@ def draw_arrow(x1, y1, x2, y2, color):
 
 
 class Player:
-    def __init__(self, x, y, route):
+    def __init__(self, x, y, route, speed):
         self.start_x = x
         self.start_y = y
         self.x = x
         self.y = y
         self.route = route
+        self.speed = speed
         self.target_index = 0
 
     def reset(self):
@@ -51,12 +52,12 @@ class Player:
         dy = ty - self.y
         dist = math.sqrt(dx * dx + dy * dy)
 
-        if dist < SPEED:
+        if dist < self.speed:
             self.x, self.y = tx, ty
             self.target_index += 1
         else:
-            self.x += SPEED * dx / dist
-            self.y += SPEED * dy / dist
+            self.x += self.speed * dx / dist
+            self.y += self.speed * dy / dist
 
     def draw(self):
         pyxel.circ(self.x, self.y, PLAYER_RADIUS, 7)
@@ -82,33 +83,33 @@ class App:
 
         # Quarterback
         self.players.append(
-            Player(150, y_los, [(150, 170)])
+            Player(150, y_los, [(150, 170)], 1)
         )
 
         # Running Back
         self.players.append(
-            Player(150, y_los + 15, [(120, 120), (150, 110)])
+            Player(150, y_los + 15, [(120, 120), (150, 105)], 1.2)
         )
 
         # Wide Receivers
         self.players.append(
-            Player(90, y_los, [(90, 80)])   # Left go
+            Player(90, y_los, [(90, 50)], 1.5)   # Left go
         )
         self.players.append(
-            Player(210, y_los, [(210, 110), (240, 110)])  # Right out
+            Player(210, y_los, [(210, 110), (240, 110)], 1.2)  # Right out
         )
 
-        self.players.append(Player(220, y_los + 5, [(220, 100), (200, 80)])) #Post
+        self.players.append(Player(220, y_los + 5, [(220, 90), (200, 70)], 1.2)) #Post
 
         #Tight End
-        self.players.append(Player(190, y_los + 5, [(180, y_los - 5), (100, y_los - 5)])) #Drag
+        self.players.append(Player(190, y_los + 5, [(180, y_los - 5), (100, y_los - 5)], 1.2)) #Drag
         
         # Offensive Line
-        self.players.append(Player(120, y_los, [(120, y_los + 10)]))  # LT
-        self.players.append(Player(135, y_los, [(135, y_los + 5)]))  # LG
-        self.players.append(Player(150, y_los, [(150, y_los)]))  # C
-        self.players.append(Player(165, y_los, [(165, y_los + 5)]))  # RG
-        self.players.append(Player(180, y_los, [(180, y_los + 10)]))  # RT
+        self.players.append(Player(120, y_los, [(120, y_los + 10)], 1.2))  # LT
+        self.players.append(Player(135, y_los, [(135, y_los + 5)], 1.2))  # LG
+        self.players.append(Player(150, y_los, [(150, y_los)], 1.2))  # C
+        self.players.append(Player(165, y_los, [(165, y_los + 5)], 1.2))  # RG
+        self.players.append(Player(180, y_los, [(180, y_los + 10)], 1.2))  # RT
 
     def update(self):
         if pyxel.btnp(pyxel.KEY_R):
