@@ -5,6 +5,7 @@ WIDTH = 300
 HEIGHT = 200
 PLAYER_RADIUS = 3.5
 TURN = 0.1
+PAUSED = False
 
 
 
@@ -112,6 +113,14 @@ class App:
         self.players.append(Player(180, y_los, [(180, y_los + 10)], 1.2))  # RT
 
     def update(self):
+        global PAUSED
+
+        if pyxel.btnp(pyxel.KEY_P):
+            PAUSED = not PAUSED
+
+        if PAUSED:
+            return
+
         if pyxel.btnp(pyxel.KEY_R):
             for p in self.players:
                 p.reset()
@@ -138,6 +147,7 @@ class App:
             p.draw()
 
         pyxel.text(5, 5, "R = Reset Play", 0)
+        pyxel.text(5, 15, "P = Pause Play", 0)
 
 
 App()
