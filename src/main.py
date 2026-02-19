@@ -65,9 +65,17 @@ class Player:
 
     def draw_route(self):
         px, py = self.start_x, self.start_y
-        for point in self.route:
-            draw_arrow(px, py, point[0], point[1], 8)
+
+        for i, point in enumerate(self.route):
+            x2, y2 = point
+
+            if i == len(self.route) - 1:
+                draw_arrow(px, py, x2, y2, 8)
+            else:
+                pyxel.line(px, py, x2, y2, 8)
+
             px, py = point
+
 
 
 
